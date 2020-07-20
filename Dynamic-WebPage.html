@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>jQuery and AJAX</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" type="text/css">
+    </script>
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        table,
+        td,
+        th {
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 15px;
+        }
+
+        button {
+            padding: 8px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 10px;
+            margin: 4px 2px;
+            background-color: white;
+            color: black;
+            border: 1.7px solid #555555;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555555;
+            color: white;
+        }
+
+        #buttonSearch {
+            padding: 8px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 9px;
+            margin: 4px 4px;
+            background-color: white;
+            color: black;
+            border: 1.7px solid #555555;
+            cursor: pointer;
+        }
+
+        #buttonSearch:hover {
+            background-color: #555555;
+            color: white;
+        }
+
+    </style>
+    <script>
+        $(document).ready(function() {
+            //Variable for Page Number
+            var pNumber = 1;
+            //Load Table on document ready to show data
+            createTable();
+            
+            //Available Tags Array
+            var availableTags = [
+                "4Degrees",
+                "Age UK",
+                "Greggs",
+                "Domino's Pizza",
+            ];
+
+            function createTable() {
+
+                //Creating Table Headers for Data
+
+                $("#businessTable").append("<thead>");
+                $("#businessTable").append("<tr>");
+                $("#businessTable").append("<th>Business</th>");
+                $("#businessTable").append("<th>Address </th>");
+                $("#businessTable").append("<th>Type</th>");
+                $("#businessTable").append("<th>Rating</th>");
+                $("#businessTable").append("<th>Date</th>");
+                $("#businessTable").append("</tr>");
+                $("#businessTable").append("</thead>");
+                $.getJSON("https://www.cs.kent.ac.uk/people/staff/yh/co539_a2_data/hygiene.php", {
+                        op: "get",
+                        page: pNumber,
+
+                    },
+                    function(data) {
+                        $.each(data, function(key, value) {
+
+                            //Creation of Table Data
+                            $("#businessTable").append("<tr>");
+                            $("#businessTable").append("<td>" + value.business + "</td>");
+                            $("#businessTable").append("<td>" + value.address + "</td>");
+                            $("#businessTable").append("<td>" + value.type + "</td>");
+                            $("#businessTable").append("<td>" + value.rating + "</td>");
+                            $("#businessTable").append("<td>" + value.date + "</td>");
+                            //Creationg of Button for the Rating
+                            var ratingButton = document.createElement("BUTTON");
+                            //Giving button id the business name to avoid any errors to view ratings when function called
+                            ratingButton.id = data[key].business;
+                            //Naming of the button
+                            ratingButton.innerHTML = "Get Ratings";
+                            //Assigning on click function to the button
+                            ratingButton.onclick = function() {
+                                businessRatings(this.id);
+                            }
+
+                            //Adding Button to the Table
+                            $("#businessTable").append(ratingButton);
+                            $("#businessTable").append("</tr>");
+
+                        });
+                    });
+            }
+
+            function businessRatings(business) {
+                $.getJSON("https://www.cs.kent.ac.uk/people/staff/yh/co539_a2_data/rating.php", {
+                        businessName: business
+                    },
+                    function(data) {
+                        //If no data then user stating no data has been found
+                        if (data == "") {
+                            alert("No Ratings to be Found for Business!");
+                        } else {
+                            //Else show window with avgRating and totalRating for the business
+                            $.each(data, function(key, value) {
+                                alert("Average Rating: " + data[key].avgRating +
+                                    "\n Total Ratings: " + data[key].totalRatings);
+                            });
+                        }
+                    });
+            }
+
+            function buttonClick(choice) {
+
+                //New Page is button id
+
+                pNumber = choice;
+
+                //Emptying Table and Recreating with new Page value from button Click
+
+                $("#businessTable").empty();
+                createTable();
+            }
+
+            function searchBusiness(string) {
+
+                //Getting Value from Input String to get Data from link
+                var string = $("#searchValue").val();
+
+                $.getJSON("https://www.cs.kent.ac.uk/people/staff/yh/co539_a2_data/hygiene.php", {
+                        op: "search",
+                        business: string
+                    },
+                    function(data) {
+                        $("#businessTable").empty();
+
+                        //Creating Table Headers for Data
+
+                        $("#businessTable").append("<thead>");
+                        $("#businessTable").append("<tr>");
+                        $("#businessTable").append("<th>Business</th>");
+                        $("#businessTable").append("<th>Address </th>");
+                        $("#businessTable").append("<th>Type</th>");
+                        $("#businessTable").append("<th>Rating</th>");
+                        $("#businessTable").append("<th>Date</th>");
+                        $("#businessTable").append("</tr>");
+                        $("#businessTable").append("</thead>");
+
+                        $.each(data, function(key, value) {
+                            //Creation of Table Data
+                            $("#businessTable").append("<tr>");
+                            $("#businessTable").append("<td>" + value.business + "</td>");
+                            $("#businessTable").append("<td>" + value.address + "</td>");
+                            $("#businessTable").append("<td>" + value.type + "</td>");
+                            $("#businessTable").append("<td>" + value.rating + "</td>");
+                            $("#businessTable").append("<td>" + value.date + "</td>");
+                            //Creationg of Button for the Rating
+                            var ratingButton = document.createElement("BUTTON");
+                            //Giving button id the business name to avoid any errors to view ratings when function called
+                            ratingButton.id = data[key].business;
+                            //Naming of the button
+                            ratingButton.innerHTML = "Get Ratings";
+                            //Assigning on click function to the button
+                            ratingButton.onclick = function() {
+                                businessRatings(this.id);
+                            }
+
+                            //Adding Button to the Table
+                            $("#businessTable").append(ratingButton);
+                            $("#businessTable").append("</tr>");
+                            //Pushing more business names into array of autocomplete to make easier for user
+                            //moving forward
+                            availableTags.push(data[key].business);
+                        });
+                    });
+                $("#searchValue").val("");
+            }
+
+            //Creation of Buttons
+            $.getJSON("https://www.cs.kent.ac.uk/people/staff/yh/co539_a2_data/hygiene.php", {
+                    op: "pages"
+                },
+                function(data) {
+                    data.pages;
+
+                    //Creation of Buttons for All Pages
+
+                    for (pNumber = 1; pNumber <= data.pages; pNumber++) {
+                        var button = document.createElement("BUTTON");
+                        var test = pNumber;
+
+                        button.id = test;
+                        button.name = "pageButton";
+                        button.innerHTML = test;
+
+                        //Adding onClick function to Button to Change Table Data
+
+                        button.onclick = function() {
+                            buttonClick(this.id);
+                        }
+
+                        //Adding Button to the HTML Document
+
+                        $("#buttons").append(button);
+
+                    }
+                });
+
+            //Creation of Forms
+            //Creation of Text, Input Form and Button to Search Table
+            var businessText = document.createTextNode("Business Name: ")
+            var input = document.createElement("INPUT");
+            input.id = "searchValue";
+            var searchButton = document.createElement("BUTTON");
+            searchButton.id = "buttonSearch";
+            searchButton.innerHTML = "Search";
+            //Allocating value of input to string
+            var string = $("#searchValue").val();
+
+            //searchButton on click function to call search function with string value from input
+            searchButton.onclick = function() {
+                searchBusiness(string);
+            }
+
+            //Adding all elements created by function to the html body
+            $("#ui").append(businessText);
+            $("#ui").append(input);
+            $("#ui").append(searchButton);
+            
+            //When user types, show user values already in autocomplete
+            //So user can click on automated without needing to type it all in
+            $("#searchValue").autocomplete({
+                source: availableTags
+            });
+
+        });
+
+    </script>
+
+</head>
+
+<body>
+
+    <h1>Local Businesses</h1>
+    <p>Shows Data of Local Businesses</p>
+
+    <table id="businessTable" border=1>
+    </table>
+
+    <div id="buttons">
+    </div>
+
+    <br>
+
+    <div id="ui" class="ui-widget">
+    </div>
+</body>
+
+</html>
